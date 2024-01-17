@@ -41,11 +41,17 @@ std::istream& operator>> (std::istream& i, tokox::Fraction<T>& f)
 {
 	T v;
 	i >> v;
+	if(i.fail()) {
+		throw std::runtime_error("Wrong input for tokox::Fraction<T>");
+	}
 	f.numerator(v);
 	if(i.get() != '/') {
 		throw std::runtime_error("Wrong input for tokox::Fraction<T>");
 	}
 	i >> v;
+	if(i.fail()) {
+		throw std::runtime_error("Wrong input for tokox::Fraction<T>");
+	}
 	f.denominator(v);
 	return i;
 }

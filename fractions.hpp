@@ -2,6 +2,7 @@
 #define TOKOX_FRACTIONS
 
 #include <cstddef>
+#include <limits>
 
 namespace tokox
 {
@@ -9,6 +10,18 @@ namespace tokox
 template<typename T = int>
 class Fraction
 {
+	static_assert(std::numeric_limits<T>::is_specialized,
+		"std::numeric_limits have to be specialized for type T in tokox::Fraction<T>");
+
+	static_assert(std::numeric_limits<T>::is_signed,
+		"type T has to be signed in tokox::Fraction<T>");
+
+	static_assert(std::numeric_limits<T>::is_integer,
+		"type T has to be an integer in tokox::Fraction<T>");
+
+	static_assert(std::numeric_limits<T>::is_exact,
+		"type T has to be exact in tokox::Fraction<T>");
+
 	public:
 		Fraction (const T n = 0, const T d = 1);
 		

@@ -17,7 +17,7 @@ Fraction<T>::Fraction (const T n, const T d):
 		_numerator = -_numerator;
 		_denominator = -_denominator;
 	} else if(_denominator == 0) {
-		throw std::runtime_error("Denominator equals Zero (0) in tokox::Fraction!");
+		throw std::runtime_error("Denominator equals Zero (0) in tokox::Fraction");
 	}
 }
 
@@ -105,7 +105,7 @@ template<typename T>
 Fraction<T>& Fraction<T>::operator%= (const Fraction& other)
 {
 	if(other.numerator() == 0) {
-		throw std::runtime_error("Modulo (%) by Zero (0) in tokox::Fraction!");
+		throw std::runtime_error("Modulo (%) by Zero (0) in tokox::Fraction");
 	}
 	_numerator = (_numerator*other.denominator())%(other.numerator()*_denominator);
 	_denominator *= other.denominator();
@@ -187,21 +187,15 @@ Fraction<T> Fraction<T>::inverted () const
 template<typename T>
 bool Fraction<T>::operator== (const Fraction& other) const
 {
-	return (_numerator*other.denominator() == other.numerator()*_denominator);
+	return (*this) <= other && (*this) >= other;
 }
 
 template<typename T>
 bool Fraction<T>::operator!= (const Fraction& other) const
 {
-	return (_numerator*other.denominator() != other.numerator()*_denominator);
+	return !((*this) == other);
 }
 
-
-template<typename T>
-bool Fraction<T>::operator> (const Fraction& other) const
-{
-	return (_numerator*other.denominator() > other.numerator()*_denominator);
-}
 
 template<typename T>
 bool Fraction<T>::operator< (const Fraction& other) const
@@ -209,18 +203,24 @@ bool Fraction<T>::operator< (const Fraction& other) const
 	return (_numerator*other.denominator() < other.numerator()*_denominator);
 }
 
-
 template<typename T>
-bool Fraction<T>::operator>= (const Fraction& other) const
+bool Fraction<T>::operator> (const Fraction& other) const
 {
-	return (_numerator*other.denominator() >= other.numerator()*_denominator);
+	return other < (*this);
 }
 
 template<typename T>
 bool Fraction<T>::operator<= (const Fraction& other) const
 {
-	return (_numerator*other.denominator() <= other.numerator()*_denominator);
+	return !((*this) > other);
 }
+
+template<typename T>
+bool Fraction<T>::operator>= (const Fraction& other) const
+{
+	return !((*this) < other);
+}
+
 
 
 
@@ -258,7 +258,7 @@ void Fraction<T>::denominator (const T d)
 		_numerator = -_numerator;
 		_denominator = -_denominator;
 	} else if(_denominator == 0) {
-		throw std::runtime_error("Denominator equals Zero (0) in tokox::Fraction!");
+		throw std::runtime_error("Denominator equals Zero (0) in tokox::Fraction");
 	}
 }
 
