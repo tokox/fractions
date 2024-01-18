@@ -54,7 +54,8 @@ class Fraction
 
 
 		Fraction& reduce ();
-		Fraction reduced () const;
+		const Fraction& reduce () const;
+		bool reduced () const;
 
 		Fraction& invert ();
 		Fraction inverted () const;
@@ -82,12 +83,11 @@ class Fraction
 		Fraction& swap (Fraction& other);
 
 
-		std::size_t hash();
 		std::size_t hash() const;
 
 	private:
-		T _numerator;
-		T _denominator;
+		mutable T _numerator;
+		mutable T _denominator;
 };
 
 }

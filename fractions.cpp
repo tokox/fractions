@@ -155,16 +155,32 @@ Fraction<T> Fraction<T>::operator-- (int)
 template<typename T>
 Fraction<T>& Fraction<T>::reduce ()
 {
-	const T gcd = std::gcd(_numerator, _denominator);
+	T gcd = std::gcd(_numerator, _denominator);
 	_numerator /= gcd;
 	_denominator /= gcd;
 	return *this;
 }
 
 template<typename T>
-Fraction<T> Fraction<T>::reduced () const
+const Fraction<T>& Fraction<T>::reduce() const
 {
-	return Fraction(*this).reduce();
+	T gcd = std::gcd(_numerator, _denominator);
+	_numerator /= gcd;
+	_denominator /= gcd;
+	return *this;
+}
+
+template<typename T>
+#ifdef __GNUG__
+__attribute__(( optimize(0), /* warning is not emmited when optimization is on */
+	warning("tokox::Fraction<T>::reduced() is not implemented yet! (always returns false)")
+))
+#else
+#warning tokox::Fraction<T>::reduced() is not implemented yet! (always false)
+#endif
+bool Fraction<T>::reduced () const
+{
+	return false;
 }
 
 
@@ -223,7 +239,6 @@ bool Fraction<T>::operator>= (const Fraction& other) const
 
 
 
-
 template<typename T>
 Fraction<T>::operator T () const
 {
@@ -272,16 +287,10 @@ Fraction<T>& Fraction<T>::swap (Fraction<T>& other)
 
 
 template <typename T>
-std::size_t Fraction<T>::hash ()
+std::size_t Fraction<T>::hash () const
 {
 	reduce();
 	return (7*std::hash<T>()(_numerator))+(257*std::hash<T>()(_denominator));
-}
-
-template<typename T>
-std::size_t Fraction<T>::hash () const
-{
-	return reduced().hash();
 }
 
 }
