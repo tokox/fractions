@@ -90,6 +90,8 @@ class Fraction
 		mutable T _denominator;
 };
 
+template class Fraction<int>;
+
 }
 
 #include "fractions.cpp"

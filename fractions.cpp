@@ -281,8 +281,13 @@ void Fraction<T>::denominator (const T d)
 template<typename T>
 Fraction<T>& Fraction<T>::swap (Fraction<T>& other)
 {
-	_numerator = other.numerator(_numerator);
-	_denominator = other.denominator(_denominator);
+	T other_numerator = other.numerator();
+	other.numerator(_numerator);
+	_numerator = other_numerator;
+	T other_denominator = other.denominator();
+	other.denominator(_denominator);
+	_denominator = other_denominator;
+	return *this;
 }
 
 
