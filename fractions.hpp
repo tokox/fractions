@@ -71,7 +71,7 @@ class Fraction
 		bool operator<= (const Fraction& other) const;
 
 
-		operator T () const;
+		T value () const;
 
 		T numerator () const;
 		void numerator (const T n);

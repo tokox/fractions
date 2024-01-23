@@ -162,7 +162,7 @@ Fraction<T>& Fraction<T>::reduce ()
 }
 
 template<typename T>
-const Fraction<T>& Fraction<T>::reduce() const
+const Fraction<T>& Fraction<T>::reduce () const
 {
 	T gcd = std::gcd(_numerator, _denominator);
 	_numerator /= gcd;
@@ -240,7 +240,7 @@ bool Fraction<T>::operator>= (const Fraction& other) const
 
 
 template<typename T>
-Fraction<T>::operator T () const
+T Fraction<T>::value () const
 {
 	return _numerator/_denominator;
 }

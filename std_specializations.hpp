@@ -24,10 +24,6 @@ struct std::hash<tokox::Fraction<T>>
 	{
 		return f.hash();
 	}
-	std::size_t operator() (tokox::Fraction<T>& f) const
-	{
-		return f.hash();
-	}
 };
 
 template<typename T>
@@ -45,7 +41,7 @@ std::istream& operator>> (std::istream& i, tokox::Fraction<T>& f)
 		throw std::runtime_error("Wrong input for tokox::Fraction<T>");
 	}
 	f.numerator(v);
-	if(i.get() != '/') {
+	if(i.get() != '/' || i.fail()) {
 		throw std::runtime_error("Wrong input for tokox::Fraction<T>");
 	}
 	i >> v;
@@ -78,9 +74,9 @@ class std::numeric_limits<tokox::Fraction<T>>
 		static constexpr int max_digits10 = std::numeric_limits<T>::max_digits10*2;
 		static constexpr int radix = std::numeric_limits<T>::radix;
 		static constexpr int min_exponent = is_bounded ? std::log2(std::numeric_limits<T>::max())/std::log2(std::numeric_limits<T>::radix)+1 : 0;
-		static constexpr int min_exponent10 = is_bounded ? std::log10(std::numeric_limits<T>::max()) : 0;
+		static constexpr int min_exponent10 = is_bounded ? std::log10(std::numeric_limits<T>::max())+1 : 0;
 		static constexpr int max_exponent = is_bounded ? std::log2(std::numeric_limits<T>::max())/std::log2(std::numeric_limits<T>::radix)+1 : 0;
-		static constexpr int max_exponent10 = is_bounded ? std::log10(std::numeric_limits<T>::max()) : 0;
+		static constexpr int max_exponent10 = is_bounded ? std::log10(std::numeric_limits<T>::max())+1 : 0;
 		static constexpr bool traps = true;
 		static constexpr bool tineness_before = false;
 
