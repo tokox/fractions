@@ -3,27 +3,52 @@
 
 #include <cstddef>
 #include <limits>
+#include <functional>
+#include <numeric>
+#include <concepts>
+
+#include "numeric_helper_functions.hpp"
 
 namespace tokox
 {
 
-template<typename T = int>
+template<typename T>
+concept FractionCompatible =
+	std::numeric_limits<T>::is_specialized &&
+	std::numeric_limits<T>::is_signed &&
+	std::numeric_limits<T>::is_integer &&
+	std::numeric_limits<T>::is_exact &&
+	std::copy_constructible<T> &&
+	std::constructible_from<T, int> &&
+	std::assignable_from<T&, T> &&
+	std::totally_ordered<T> &&
+	tokox::can_checkable<T> &&
+	requires(T a, T b) {
+		{ -a } -> std::convertible_to<T>;
+		{ a + b } -> std::convertible_to<T>;
+		{ a += b } -> std::convertible_to<T>;
+		{ a - b } -> std::convertible_to<T>;
+		{ a -= b } -> std::convertible_to<T>;
+		{ a * b } -> std::convertible_to<T>;
+		{ a *= b } -> std::convertible_to<T>;
+		{ a / b } -> std::convertible_to<T>;
+		{ a /= b } -> std::convertible_to<T>;
+		{ a % b } -> std::convertible_to<T>;
+		{ a %= b } -> std::convertible_to<T>;
+		{ std::gcd<T, T>(a, b) } -> std::convertible_to<T>;
+		{ std::lcm<T, T>(a, b) } -> std::convertible_to<T>;
+	};
+
+template<typename T>
+concept Hashable = requires(T& t) {
+	{ std::hash<T>()(t) } -> std::convertible_to<std::size_t>;
+};
+
+template<FractionCompatible T = int>
 class Fraction
 {
-	static_assert(std::numeric_limits<T>::is_specialized,
-		"std::numeric_limits have to be specialized for type T in tokox::Fraction<T>");
-
-	static_assert(std::numeric_limits<T>::is_signed,
-		"type T has to be signed in tokox::Fraction<T>");
-
-	static_assert(std::numeric_limits<T>::is_integer,
-		"type T has to be an integer in tokox::Fraction<T>");
-
-	static_assert(std::numeric_limits<T>::is_exact,
-		"type T has to be exact in tokox::Fraction<T>");
-
 	public:
-		Fraction (const T n = 0, const T d = 1);
+		Fraction (const T n = T(0), const T d = T(1));
 		
 		Fraction (const Fraction& other);
 
@@ -83,7 +108,7 @@ class Fraction
 		Fraction& swap (Fraction& other);
 
 
-		std::size_t hash() const;
+		std::size_t hash() const requires Hashable<T>;
 
 	private:
 		mutable T _numerator;
