@@ -6,6 +6,8 @@
 #include <concepts>
 #include <numeric>
 
+#include "util.hpp"
+
 namespace tokox
 {
 
@@ -228,7 +230,7 @@ T lcm (const T& a, const T& b)
 	T p = a / gcd<T>(a, b);
 	if (!can_mul<T>(p, b))
 	{
-		throw std::overflow_error("overflow in tokox::lcm");
+		throw std::overflow_error("overflow in tokox::lcm<" + get_typename<T>() + ">");
 	}
 	return p * b;
 }
