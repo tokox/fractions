@@ -6,6 +6,7 @@
 #include <functional>
 #include <concepts>
 #include <stdexcept>
+#include <cstdint>
 
 #include "numeric_helper_functions.hpp"
 
@@ -134,8 +135,14 @@ public:
 	std::size_t hash() const requires Hashable<T>;
 
 private:
+	Fraction(const T n, const T d, const uint8_t flags);
 	mutable T _numerator;
 	mutable T _denominator;
+	mutable uint8_t _flags;
+	enum Flags : uint8_t
+	{
+		REDUCED = 1
+	};
 };
 
 template class Fraction<int>;

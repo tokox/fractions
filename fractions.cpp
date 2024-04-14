@@ -65,10 +65,19 @@ T common_denominator (const Fraction<T>& a,
 template <Fraction_compatible T>
 Fraction<T>::Fraction (const T n, const T d):
 	_numerator(n),
-	_denominator(d)
+	_denominator(d),
+	_flags(0)
 {
 	if (_denominator < T(0))
 	{
+		if (!can_neg<T>(_numerator) || !can_neg<T>(_denominator))
+		{
+			reduce();
+			if (!can_neg<T>(_numerator) || !can_neg<T>(_denominator))
+			{
+				throw FractionOverflowError<T>("Fraction::Fraction");
+			}
+		}
 		_numerator = -_numerator;
 		_denominator = -_denominator;
 	}
@@ -78,11 +87,18 @@ Fraction<T>::Fraction (const T n, const T d):
 	}
 }
 
+template<Fraction_compatible T>
+Fraction<T>::Fraction (const T n, const T d, const uint8_t f):
+	_numerator(n),
+	_denominator(d),
+	_flags(f)
+{}
 
 template <Fraction_compatible T>
 Fraction<T>::Fraction (const Fraction& other):
 	_numerator(other.numerator()),
-	_denominator(other.denominator())
+	_denominator(other.denominator()),
+	_flags(other.reduced() ? REDUCED : 0)
 {}
 
 
@@ -92,6 +108,7 @@ Fraction<T>& Fraction<T>::operator= (const Fraction& other)
 {
 	_numerator = other.numerator();
 	_denominator = other.denominator();
+	_flags = other.reduced() ? REDUCED : 0;
 	return *this;
 }
 
@@ -102,6 +119,7 @@ Fraction<T>& Fraction<T>::operator+= (const Fraction& other)
 	T common_denom = common_denominator(*this, other, "Fraction::operator+=", can_add<T>);
 	_numerator = (_numerator * (common_denom / _denominator)) + (other.numerator() * (common_denom / other.denominator()));
 	_denominator = common_denom;
+	_flags &= ~REDUCED;
 	return *this;
 }
 
@@ -125,6 +143,7 @@ Fraction<T>& Fraction<T>::operator-= (const Fraction& other)
 	T common_denom = common_denominator(*this, other, "Fraction::operator-=", can_sub<T>);
 	_numerator = (_numerator * (common_denom / _denominator)) - (other.numerator() * (common_denom / other.denominator()));
 	_denominator = common_denom;
+	_flags &= ~REDUCED;
 	return *this;
 }
 
@@ -145,7 +164,7 @@ Fraction<T> Fraction<T>::operator- () const
 			throw FractionOverflowError<T>("Fraction::operator-");
 		}
 	}
-	return Fraction(-_numerator, _denominator);
+	return Fraction(-_numerator, _denominator, _flags);
 }
 
 
@@ -157,6 +176,7 @@ Fraction<T>& Fraction<T>::operator*= (const Fraction& other)
 	{
 		_numerator *= other.numerator();
 		_denominator *= other.denominator();
+		_flags &= ~REDUCED;
 		return *this;
 	}
 	if (!reduced())
@@ -167,6 +187,7 @@ Fraction<T>& Fraction<T>::operator*= (const Fraction& other)
 		{
 			_numerator *= other.numerator();
 			_denominator *= other.denominator();
+			_flags &= ~REDUCED;
 			return *this;
 		}
 	}
@@ -178,6 +199,7 @@ Fraction<T>& Fraction<T>::operator*= (const Fraction& other)
 		{
 			_numerator *= other.numerator();
 			_denominator *= other.denominator();
+			_flags &= ~REDUCED;
 			return *this;
 		}
 	}
@@ -191,6 +213,7 @@ Fraction<T>& Fraction<T>::operator*= (const Fraction& other)
 	{
 		_numerator *= other_numerator;
 		_denominator *= other_denominator;
+		_flags &= ~REDUCED;
 		return *this;
 	}
 	_gcd = gcd<T>(_denominator, other_numerator);
@@ -201,6 +224,7 @@ Fraction<T>& Fraction<T>::operator*= (const Fraction& other)
 	{
 		_numerator *= other_numerator;
 		_denominator *= other_denominator;
+		_flags |= REDUCED;
 		return *this;
 	}
 	throw FractionOverflowError<T>("Fraction::operator*");
@@ -232,6 +256,7 @@ Fraction<T>& Fraction<T>::operator%= (const Fraction& other)
 	T common_denom = common_denominator(*this, other);
 	_numerator = (_numerator * (common_denom / _denominator)) % (other.numerator() * (common_denom / other.denominator()));
 	_denominator = common_denom;
+	_flags &= ~REDUCED;
 	return *this;
 }
 
@@ -299,6 +324,7 @@ Fraction<T>& Fraction<T>::reduce ()
 		T _gcd = gcd<T>(_numerator, _denominator);
 		_numerator /= _gcd;
 		_denominator /= _gcd;
+		_flags |= REDUCED;
 	}
 	return *this;
 }
@@ -311,18 +337,15 @@ const Fraction<T>& Fraction<T>::reduce () const
 		T _gcd = gcd<T>(_numerator, _denominator);
 		_numerator /= _gcd;
 		_denominator /= _gcd;
+		_flags |= REDUCED;
 	}
 	return *this;
 }
 
 template <Fraction_compatible T>
-__attribute__((
-	optimize(0), /* warning is not emmited when optimization is on */
-	warning("tokox::Fraction<T>::reduced() is not implemented yet! (always returns false)")
-	))
 bool Fraction<T>::reduced () const
 {
-	return false;
+	return _flags & REDUCED;
 }
 
 
@@ -410,6 +433,7 @@ template <Fraction_compatible T>
 void Fraction<T>::numerator (const T n)
 {
 	_numerator = n;
+	_flags &= ~REDUCED;
 }
 
 
@@ -423,6 +447,7 @@ template <Fraction_compatible T>
 void Fraction<T>::denominator (const T d)
 {
 	_denominator = d;
+	_flags &= ~REDUCED;
 	if (_denominator < 0)
 	{
 		_numerator = -_numerator;
@@ -438,12 +463,9 @@ void Fraction<T>::denominator (const T d)
 template <Fraction_compatible T>
 void Fraction<T>::swap (Fraction<T>& other)
 {
-	T other_numerator = other.numerator();
-	other.numerator(_numerator);
-	_numerator = other_numerator;
-	T other_denominator = other.denominator();
-	other.denominator(_denominator);
-	_denominator = other_denominator;
+	const Fraction<T> other_copy(other);
+	other = *this;
+	*this = other_copy;
 }
 
 
